@@ -6,6 +6,7 @@ from django.db import models
 #List of rooms
 class Rooms(models.Model):
 	name = models.CharField(max_length=20, unique=True)
+	size = models.CharField(max_length=3)
 
 class Bookings(models.Model):
 	booker = models.CharField(max_length=20)

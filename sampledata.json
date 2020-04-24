@@ -3,21 +3,56 @@
 	"model" : "rooms.Rooms",
 	"pk" : 1,
 	"fields":{
-		"name":"S01"
+		"name":"S01",
+		"size":"S"
 	}
 },
 {
 	"model" : "rooms.Rooms",
 	"pk" : 2,
 	"fields":{
-		"name":"S02"
+		"name":"S02",
+		"size":"S"
 	}
 },
 {
 	"model" : "rooms.Rooms",
 	"pk" : 3,
 	"fields":{
-		"name":"S03"
+		"name":"S03",
+		"size":"S"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 4,
+	"fields":{
+		"name":"M01",
+		"size":"M"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 5,
+	"fields":{
+		"name":"M02",
+		"size":"M"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 6,
+	"fields":{
+		"name":"M03",
+		"size":"M"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 7,
+	"fields":{
+		"name":"L01",
+		"size":"L"
 	}
 }
 ]
