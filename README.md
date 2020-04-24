@@ -1,8 +1,8 @@
-# Room booking server
+# Room Booking server
 
-This is a server for a room booking web application, produced on Django.
+This is a server for a room booking web application, built on Django.
 
-## Steps to deploy
+## Steps
 To set up:
 ```
     python manage.py makemigrations
