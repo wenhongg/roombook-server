@@ -1,0 +1,23 @@
+[ 
+{
+	"model" : "rooms.Rooms",
+	"pk" : 1,
+	"fields":{
+		"name":"S01"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 2,
+	"fields":{
+		"name":"S02"
+	}
+},
+{
+	"model" : "rooms.Rooms",
+	"pk" : 3,
+	"fields":{
+		"name":"S03"
+	}
+}
+]
