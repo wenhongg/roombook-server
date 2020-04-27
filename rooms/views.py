@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render, get_list_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 
 from django.views.decorators.csrf import csrf_exempt
@@ -9,11 +9,13 @@ from . import models as room_models
 from datetime import datetime
 import pytz
 
+
 @csrf_exempt
 def index(request):
     return HttpResponse("Backend for room booking system.")
 
 #list each room and check each one if booked, and until when
+#no arguments required
 @csrf_exempt
 def overview(request):
 	#serves SG timezone.
@@ -30,24 +32,41 @@ def overview(request):
 			data.append({'roomName': i.name, 'booked': True})
 		else:
 			data.append({'roomName': i.name, 'booked': False})
-	return generateJson(data)
+	return generateJson({'data': data})
 
-#start time, end time, date, booker,
 @csrf_exempt
 def placeBooking(request):
 	#check validity
-	data = json.loads(request.body)
-	room_name = data['roomName']
-	booker = data['booker']
-	contact = data['contact']
-	start = data['start']
-	end = data['end']
-	duration = data['duration']
-	date = data['date']
+	args = json.loads(request.body)
+	
+	for i in ['roomName','booker','contact','start','end','date']:
+		if i not in args:
+			return ErrorResponse("One or more parameters are missing.")
+
+	#check input
+	room_name = args['roomName']
+	booker = args['booker']
+	contact = args['contact']
+	start = args['start']
+	end = args['end']
+	date = args['date']
+
+	if not isValidBooker(booker,contact):
+		return ErrorResponse("Booker's details were invalid.")
+	if not isValidStartEnd(start,end):
+		return ErrorResponse("Invalid start and end.")
+	if not isValidDate(date):
+		return ErrorResponse("Invalid date.")
+	if not isValidRoom(room_name):
+		return ErrorResponse("Room does not exist.")
+
+
+	duration = end - start
 
 	c = room_models.Bookings.objects.filter(room_name=room_name,date=date,start__lte=start,end__gt=start)
 	d = room_models.Bookings.objects.filter(room_name=room_name,date=date,start__lt=end,end__gte=end)
 
+	#Someone else booked? 200 or 400.
 	if len(c)>0 or len(d)>0:
 		return generateJson({'response': "An error occured. Someone might have booked this slot right before you."})
 	
@@ -58,20 +77,30 @@ def placeBooking(request):
 	successStr = "Success. The room " + room_name + " has been booked." 
 	return generateJson({'response': successStr });
 
-#search available slots given date and duration, and also a boolean o
+#search available slots given date and duration.
 @csrf_exempt
 def search(request):
 	#check validity
 	args = json.loads(request.body)
+	
+	for i in ['duration','date']:
+		if i not in args:
+			print(i + " was missing.")
+			return ErrorResponse("One or more parameters are missing.")
 	#2 arguments
 	duration = args['duration']
 	date = args['date']
+		
+	if not isValidDate(date):
+		return ErrorResponse("Invalid date.")
+	if not isValidDuration(duration):
+		return ErrorResponse("Invalid duration.")
 
 	start = 0
-	end = args['duration']
+	end = duration
+
 	#if the date is today, bring the start search for time forward.
 	if isToday(date):
-		print("today was found")
 		tz = pytz.timezone('Asia/Singapore') 
 		currhour = datetime.now(tz).hour
 		start += currhour
@@ -94,13 +123,27 @@ def search(request):
 		start +=1
 		end +=1
 
-	return generateJson(data);
+	return generateJson({'data': data});
 
 
 #search bookings by room and date
 @csrf_exempt
 def getRoomData(request):
+
 	args = json.loads(request.body)
+
+	for i in ['room','date']:
+		if i not in args:
+			print(i + " was missing.")
+			return ErrorResponse("One or more parameters are missing.")
+	room_name = args['room']
+	date = args['date']
+	#check if errors exist
+	if not isValidDate(date):
+		return ErrorResponse("Invalid date.")
+	if not isValidRoom(room_name):
+		return ErrorResponse("Room does not exist.")
+
 	c = room_models.Bookings.objects.filter(room_name=args['room'],date=args['date']).order_by('start')
 	data = []
 	for i in c:
@@ -110,24 +153,69 @@ def getRoomData(request):
 
 		item = {
 			"start": i.start,
-			"end": i.end, #TODO should i return number 4 or 0400?
+			"end": i.end,
 			"booker": i.booker,
 			"contact": i.contact,
 			"duration": duration
 		}
 		data.append(item)
-	return generateJson(data)
+	return generateJson({'data' : data})
 
 
 
 
 ### CORE HELPER FUNCTIONS
+
+#successful return
+def generateJson(json):
+	json['status'] = 200
+	response = JsonResponse(json)
+
+	response['Access-Control-Allow-Origin'] = '*' #very hacky TODO
+	return response
+
+def ErrorResponse(messagestring):
+	response = JsonResponse({'status': 400, 'message': messagestring})
+	response['Access-Control-Allow-Origin'] = '*' #very hacky TODO
+	return response
+
+
+#validation
+
 def isToday(date):
 	c = datetime.now().strftime('%d-%m-%Y')
 	return date==c
 
-def generateJson(json):
-	response = JsonResponse(json, safe=False)
-	response['Access-Control-Allow-Origin'] = '*' #very hacky TODO
-	return response
+def isValidDate(date):
+	if(len(date)!=10):
+		return False
+	if not date[0:2].isdigit() or not date[3:5].isdigit() or not date[6:10].isdigit():
+		return False
+	if date[2]!='-' or date[5]!='-':
+		return False
+	return True
 
+def isValidStartEnd(start,end):
+	if type(start)!=int or start>=24 or start<0:
+		return False
+	if type(end)!=int or end>24 or end<=0:
+		return False
+	if start>=end:
+		return False
+	return True
+
+def isValidDuration(duration):
+	if type(duration)!=int or duration>24 or duration<=0:
+		return False
+	return True
+
+def isValidBooker(booker, contact):
+	if contact=="" or booker=="":
+		return False
+	return True
+
+def isValidRoom(room_name):
+	c = room_models.Rooms.objects.filter(name=room_name)
+	if len(c)==0:
+		return False
+	return True
