@@ -8,7 +8,8 @@ import pytz
 from . import models as room_models
 from datetime import datetime
 import pytz
-
+from . import settings
+DELETE_PASSWORD = settings.DELETE_PASSWORD
 
 @csrf_exempt
 def index(request):
@@ -33,6 +34,30 @@ def overview(request):
 		else:
 			data.append({'roomName': i.name, 'booked': False})
 	return generateJson({'data': data})
+
+
+@csrf_exempt
+def deleteBooking(request):
+	if not request.body:
+		return ErrorResponse("Bad request.")
+	args = json.loads(request.body)
+	for i in ['roomName','start','date','delete']:
+		if i not in args:
+			return ErrorResponse("One or more parameters are missing.")
+	#check input
+	room_name = args['roomName']
+	start = args['start']
+	date = args['date']
+
+	if(delete!=DELETE_PASSWORD):
+		return ErrorResponse("No authorization to delete.")
+
+	c = room_models.Bookings.objects.filter(room_name=room_name,date=date,start=start)
+	if(len(c)==0):
+		return ErrorResponse("Booking doesn't exist.")
+
+	c.delete()
+	return generateJson({'response': 'Successfully deleted.'})
 
 @csrf_exempt
 def placeBooking(request):
@@ -215,6 +240,9 @@ def isValidDuration(duration):
 
 def isValidBooker(booker, contact):
 	if contact=="" or booker=="":
+		return False
+	#allow phone number only in contact
+	if not contact.isdigit() or len(contact)!=8:
 		return False
 	return True
 
