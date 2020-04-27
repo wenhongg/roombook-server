@@ -37,6 +37,8 @@ def overview(request):
 @csrf_exempt
 def placeBooking(request):
 	#check validity
+	if not request.body:
+		return ErrorResponse("Bad request.")
 	args = json.loads(request.body)
 	
 	for i in ['roomName','booker','contact','start','end','date']:
@@ -81,8 +83,9 @@ def placeBooking(request):
 @csrf_exempt
 def search(request):
 	#check validity
+	if not request.body:
+		return ErrorResponse("Bad request.")
 	args = json.loads(request.body)
-	
 	for i in ['duration','date']:
 		if i not in args:
 			print(i + " was missing.")
@@ -129,7 +132,8 @@ def search(request):
 #search bookings by room and date
 @csrf_exempt
 def getRoomData(request):
-
+	if not request.body:
+		return ErrorResponse("Bad request.")
 	args = json.loads(request.body)
 
 	for i in ['room','date']:
