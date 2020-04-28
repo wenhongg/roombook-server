@@ -22,12 +22,12 @@ def overview(request):
 	#serves SG timezone.
 	tz = pytz.timezone('Asia/Singapore') 
 	currhour = datetime.now(tz).hour
-	
+	date = datetime.now().strftime('%d-%m-%Y')
 	rooms = room_models.Rooms.objects.all()
 
 	data = []
 	for i in rooms:
-		c = room_models.Bookings.objects.filter(room_name=i.name,start__lte=currhour,end__gt=currhour)
+		c = room_models.Bookings.objects.filter(room_name=i.name,start__lte=currhour,end__gt=currhour,date=date)
 		print(c)
 		if len(c)>0:
 			data.append({'roomName': i.name, 'booked': True})
