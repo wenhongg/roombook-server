@@ -102,7 +102,7 @@ def placeBooking(request):
 	en.save()
 
 	successStr = "Success. The room " + room_name + " has been booked." 
-	return generateJson({'response': successStr });
+	return generateJson({'response': successStr })
 
 #search available slots given date and duration.
 @csrf_exempt
@@ -151,7 +151,7 @@ def search(request):
 		start +=1
 		end +=1
 
-	return generateJson({'data': data});
+	return generateJson({'data': data})
 
 
 #search bookings by room and date
