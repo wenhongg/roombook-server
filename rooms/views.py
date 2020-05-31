@@ -13,7 +13,9 @@ DELETE_PASSWORD = settings.DELETE_PASSWORD
 
 @csrf_exempt
 def index(request):
-    return HttpResponse("Backend for room booking system.")
+	print("Pinged server.")
+	return generateJson({ 'message' : "Ping success." })
+    #return HttpResponse("Backend for room booking system.")
 
 #list each room and check each one if booked, and until when
 #no arguments required
